@@ -1,10 +1,15 @@
 {
-  "makefile.extensionOutputFolder": "./.vscode",
-  "files.associations": {
-    "stdbool.h": "c"
-  },
+  "makefile.extensionOutputFolder": "./out",
+  "C_Cpp.default.compilerPath": "/usr/bin/clang",
+  "C_Cpp.default.cStandard": "c99",
+  "C_Cpp.default.intelliSenseMode": "macos-clang-x64",
   "C_Cpp.default.compilerArgs": [
-    "-std=c99"
+    "-std=c99",
+    "-lSDL2",
+    "-lSDL2main"
   ],
-  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
+  "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**"
+  ]
 }

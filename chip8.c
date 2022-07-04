@@ -1,5 +1,7 @@
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <SDL2/SDL.h>
 
 const int TOTAL_MEMORY = 1024 * 4;
 const int SCREEN_WIDTH = 64;
@@ -46,33 +48,27 @@ void vm_execute(VM *vm)
   switch (kind)
   {
   case 0x0:
-    print("Clear screen\n");
+    printf("Clear screen\n");
     memset(vm->display, 0, sizeof vm->display);
     vm->pc += 2;
     break;
   case 0x1:
     printf("Jump to NNN\n");
-    unsigned short offset = opcode & 0x0FFF;
-    vm->pc = offset;
+    vm->pc = opcode & 0x0FFF;
     break;
   case 0x6:
     printf("Set register VX to value NN\n");
-    unsigned char vx = opcode & 0x0F00 >> 8;
-    unsigned short value = opcode & 0x00FF;
-    vm->registers[vx] = value;
+    vm->registers[opcode & 0x0F00 >> 8] = opcode & 0x00FF;
     vm->pc += 2;
     break;
   case 0x7:
     printf("Increment register VX by value NN\n");
-    unsigned char vx = opcode & 0x0F;
-    unsigned short value = opcode & 0x00FF;
-    vm->registers[vx] += value;
+    vm->registers[opcode & 0x0F] += opcode & 0x00FF;
     vm->pc += 2;
     break;
   case 0xA:
     printf("Set index register I to NNN\n");
-    unsigned short value = opcode & 0x0FFF;
-    vm->index = value;
+    vm->index = opcode & 0x0FFF;
     break;
   case 0xD:
     printf("Display/draw\n");
