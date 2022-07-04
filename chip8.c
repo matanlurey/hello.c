@@ -37,6 +37,56 @@ typedef struct chip8
   unsigned char registers[16];
 } VM;
 
+int vm_start()
+{
+  if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+  {
+    printf("Failed to initialize SDL2: %s\n", SDL_GetError());
+    return -1;
+  }
+
+  SDL_Window *window = SDL_CreateWindow(
+      "CHIP-8",
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      SCREEN_WIDTH * 10,
+      SCREEN_HEIGHT * 10,
+      0);
+
+  if (!window)
+  {
+    printf("Failed to create window: %s\n", SDL_GetError());
+    return -1;
+  }
+
+  SDL_Surface *surface = SDL_GetWindowSurface(window);
+
+  if (!surface)
+  {
+    printf("Failed to get surface from window: %s\n", SDL_GetError());
+    return -1;
+  }
+
+  bool quit = false;
+  while (!quit)
+  {
+    SDL_Event e;
+    while (SDL_PollEvent(&e) > 0)
+    {
+      switch (e.type)
+      {
+      case SDL_QUIT:
+        quit = true;
+        break;
+      }
+
+      SDL_UpdateWindowSurface(window);
+    }
+  }
+
+  return 0;
+}
+
 void vm_execute(VM *vm)
 {
   // Fetch.
@@ -81,5 +131,12 @@ void vm_execute(VM *vm)
 
 int main()
 {
+  int result = vm_start();
+  if (result < 0)
+  {
+    return result;
+  }
+  printf("Press any key to continue...\n");
+  getchar();
   return 0;
 }

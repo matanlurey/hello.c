@@ -1,5 +1,5 @@
 CC      = clang
-C_FLAGS = `sdl2-config --cflags` -g -W -Wall -Wextra -pedantic -O0 -I `sdl2-config --prefix`/include/
+C_FLAGS = -I /opt/homebrew/include $(shell sdl2-config --libs) -g -W -Wall -Wextra -pedantic -O0
 MAIN    = chip8.c
 
 default: build
