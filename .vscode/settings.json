@@ -1,15 +1,7 @@
 {
-  "makefile.extensionOutputFolder": "./out",
-  "C_Cpp.default.compilerPath": "/usr/bin/clang",
-  "C_Cpp.default.cStandard": "c99",
-  "C_Cpp.default.intelliSenseMode": "macos-clang-x64",
-  "C_Cpp.default.compilerArgs": [
-    "-std=c99",
-    "-lSDL2",
-    "-lSDL2main"
-  ],
-  "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
-  "C_Cpp.default.includePath": [
-    "${workspaceFolder}/**"
-  ]
+  "makefile.extensionOutputFolder": "./.vscode",
+  "files.associations": {
+    "*.ttslua": "lua",
+    "sdl.h": "c"
+  }
 }

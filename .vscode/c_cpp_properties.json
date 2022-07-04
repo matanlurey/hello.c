@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "configurationProvider": "ms-vscode.cpptools",
+            "includePath": [
+                "/usr/local/include",
+                "/opt/homebrew/include",
+                "${workspaceRoot}"
+            ],
+            "browse": {
+                "path": [
+                    "/usr/local/include",
+                    "/opt/homebrew/include",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "cppStandard": "c++17",
+            "compilerArgs": [
+              "-std=c99"
+            ]
+        }
+    ],
+    "version": 4
+}
