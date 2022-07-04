@@ -1,5 +1,6 @@
-# Build folder
+# Build folder & logs
 out/
+.vscode/*.log
 
 # Prerequisites
 *.d
