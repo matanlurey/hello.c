@@ -36,7 +36,7 @@ typedef struct chip8
   unsigned char memory[TOTAL_MEMORY];
 
   // A 64x32 pixel monochrome display
-  bool display[SCREEN_WIDTH][SCREEN_HEIGHT];
+  bool display[SCREEN_HEIGHT][SCREEN_WIDTH];
 
   // Program counter; points to the current instruction in memory.
   unsigned short pc;
@@ -136,10 +136,39 @@ int vm_start(FILE *game)
   return 0;
 }
 
+void vm_debug_sprite(VM *vm, unsigned char height)
+{
+  printf("\n   ");
+  for (int x = 0; x < 8; x++)
+  {
+    printf("%d", x % 10);
+  }
+  printf("\n");
+  for (int y = 0; y < height; y++)
+  {
+    printf("%02d: ", y);
+    unsigned char sprite = vm->memory[vm->index + y];
+    for (int x = 0; x < 8; x++)
+    {
+      bool pixel = sprite & (0x80 >> x);
+      printf(pixel ? "*" : " ");
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
 void vm_debug_display(VM *vm)
 {
+  printf("\n   ");
+  for (int x = 0; x < SCREEN_WIDTH; x++)
+  {
+    printf("%d", x % 10);
+  }
+  printf("\n");
   for (int y = 0; y < SCREEN_HEIGHT; y++)
   {
+    printf("%02d: ", y);
     for (int x = 0; x < SCREEN_WIDTH; x++)
     {
       if (vm->display[y][x])
@@ -153,6 +182,7 @@ void vm_debug_display(VM *vm)
     }
     printf("\n");
   }
+  printf("\n");
 }
 
 void vm_render(VM *vm, SDL_Surface *surface)
@@ -169,7 +199,7 @@ void vm_render(VM *vm, SDL_Surface *surface)
     for (int x = 0; x < SCREEN_WIDTH * SCREEN_SCALE; x++)
     {
       bool pixel = vm->display[y / SCREEN_SCALE][x / SCREEN_SCALE];
-      screen[y + x * surface->w] = pixel ? 0xFFFFFFFF : 0;
+      screen[x + y * surface->w] = pixel ? 0xFFFFFFFF : 0;
     }
   }
 
@@ -184,18 +214,20 @@ void vm_render(VM *vm, SDL_Surface *surface)
 // `N`, where N is the height of the sprite.
 //
 // ... ands draws the cooresponding sprite to the (virtual) display.
-char *vm_execute_draw(VM *vm, short opcode)
+char *vm_execute_draw(VM *vm, unsigned short opcode)
 {
-  char height = opcode & 0x000F;
-  char vx = vm->registers[opcode & 0x0F00 >> 8] % SCREEN_WIDTH;
-  char vy = vm->registers[opcode & 0x00F0 >> 4] % SCREEN_HEIGHT;
+  unsigned char height = opcode & 0x000F;
+  unsigned char rx = (opcode & 0x0F00) >> 8;
+  unsigned char ry = (opcode & 0x00F0) >> 4;
+  unsigned char vx = vm->registers[rx] % SCREEN_WIDTH;
+  unsigned char vy = vm->registers[ry] % SCREEN_HEIGHT;
 
   // Will be set to 1 IFF any pixels were turned "off" by drawing.
-  char vf = 0;
+  unsigned char vf = 0;
 
   for (int y = 0; y < height; y++)
   {
-    char sprite = vm->memory[vm->index + y];
+    unsigned char sprite = vm->memory[vm->index + y];
     for (int x = 0; x < 8; x++)
     {
       bool pixel = sprite & (0x80 >> x);
@@ -218,8 +250,14 @@ char *vm_execute_draw(VM *vm, short opcode)
   vm->registers[0xF] = vf;
 
   char *output;
-  asprintf(&output, "{X = %d, Y = %d, H = %d}", vx, vy, height);
-  vm_debug_display(vm);
+  asprintf(
+      &output,
+      "{X = %d (R=%X), Y = %d (R=%X), H = %d}",
+      vx,
+      rx,
+      vy,
+      ry,
+      height);
   return output;
 }
 
@@ -249,15 +287,23 @@ void vm_execute(VM *vm)
     break;
   case 0x6:
     text = "SET_REG";
-    vm->registers[opcode & 0x0F00 >> 8] = opcode & 0x00FF;
+    vm->registers[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
     vm->pc += 2;
-    asprintf(&debug, "r[%X] = 0x%04X", opcode & 0x0F00 >> 8, opcode & 0x00FF);
+    asprintf(
+        &debug,
+        "r[%X] = 0x%04X",
+        (opcode & 0x0F00) >> 8,
+        opcode & 0x00FF);
     break;
   case 0x7:
     text = "ADD_REG";
-    vm->registers[opcode & 0x0F] += opcode & 0x00FF;
+    vm->registers[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
     vm->pc += 2;
-    asprintf(&debug, "r[%X] += 0x%04X", opcode & 0x0F00 >> 8, opcode & 0x00FF);
+    asprintf(
+        &debug,
+        "r[%X] += 0x%04X",
+        (opcode & 0x0F00) >> 8,
+        opcode & 0x00FF);
     break;
   case 0xA:
     text = "SET_INDEX";
@@ -278,7 +324,7 @@ void vm_execute(VM *vm)
   {
     if (!vm->is_infinite_looping)
     {
-      printf("========== Looping ==========\n");
+      printf("========== Infinite Looping ==========\n");
       vm->is_infinite_looping = true;
     }
   }
@@ -290,6 +336,11 @@ void vm_execute(VM *vm)
     {
       printf("%-10s %s\n", "", debug);
     }
+  }
+
+  if (!strcmp(text, "DRAW"))
+  {
+    vm_debug_sprite(vm, opcode & 0x000F);
   }
 
   vm->last_opcode = opcode;
